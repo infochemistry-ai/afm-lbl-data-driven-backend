@@ -1,0 +1,10 @@
+# Copy to docker-compose.override.yml to enable.
+# Mounts src/ live for hot-reload during development.
+services:
+  api:
+    volumes:
+      - ./src:/app/src
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+  worker:
+    volumes:
+      - ./src:/app/src
