@@ -13,7 +13,7 @@ wheels/
 .claude/
 
 # Runtime artifacts
-storage/
+/storage/
 exports/
 .env
 .pytest_cache/
