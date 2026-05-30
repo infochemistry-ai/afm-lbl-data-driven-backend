@@ -21,7 +21,7 @@ def _try(fn, default=None):
 @register_extractor
 class Iso25178Extractor:
     name = "iso25178"
-    version = "0.1.0"
+    version = "0.2.0"
     scope = "scan"
     default_params: dict = {}
 
@@ -43,8 +43,9 @@ class Iso25178Extractor:
         if surface.width_um and surface.height_um:
             try:
                 import surfalize
-                step_x = (surface.width_um * 1e-6) / surface.pixels_x
-                step_y = (surface.height_um * 1e-6) / surface.pixels_y
+                # Pixel pitch: N points span the surface, so step = extent / (N - 1).
+                step_x = (surface.width_um * 1e-6) / max(surface.pixels_x - 1, 1)
+                step_y = (surface.height_um * 1e-6) / max(surface.pixels_y - 1, 1)
                 surf = surfalize.Surface(z, step_x=step_x, step_y=step_y)
                 for name in (*_HYBRID_PARAMS, *_SPATIAL_PARAMS, *_FUNCTIONAL_PARAMS, *_VOLUME_PARAMS):
                     out[name] = _try(lambda n=name: getattr(surf, n)())

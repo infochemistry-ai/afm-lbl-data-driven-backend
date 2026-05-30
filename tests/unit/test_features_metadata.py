@@ -21,6 +21,6 @@ def test_metadata_extracts_pixel_size_and_aspect():
     out = MetadataExtractor().extract(s, _ctx(), {})
     assert out["pixels_x"] == 256
     assert out["pixels_y"] == 256
-    assert out["pixel_size_x_nm"] == 5.0 * 1000 / 256
-    assert out["pixel_size_y_nm"] == 5.0 * 1000 / 256
+    assert out["pixel_size_x_nm"] == 5.0 * 1000 / 255
+    assert out["pixel_size_y_nm"] == 5.0 * 1000 / 255
     assert out["aspect_ratio"] == 1.0
