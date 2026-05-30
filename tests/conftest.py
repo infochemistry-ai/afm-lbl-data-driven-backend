@@ -18,3 +18,6 @@ def _baseline_env(monkeypatch):
     monkeypatch.setenv("REDIS_URL", "redis://localhost:6379/0")
     monkeypatch.setenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
     monkeypatch.setenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/1")
+
+
+pytest_plugins = ("tests.conftest_db",)
