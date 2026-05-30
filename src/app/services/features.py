@@ -1,3 +1,6 @@
+import os
+import shutil
+import tempfile
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -123,64 +126,67 @@ def run_pipeline(
     parser_cls = get_parser_by_name(scan.parser_name)
     parser = parser_cls()
 
-    import shutil
-    import tempfile
-
     suffix = "." + scan.original_filename.rsplit(".", 1)[-1]
     with storage.open(scan.storage_key) as fh:
         with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
             shutil.copyfileobj(fh, tmp)
             tmp_path = tmp.name
 
-    surface = parser.parse(tmp_path)
-    cleaned, preprocessing_steps = preprocess(surface)
+    try:
+        surface = parser.parse(tmp_path)
+        cleaned, preprocessing_steps = preprocess(surface)
 
-    ctx = build_context(session, scan)
-    errors: dict[str, str] = {}
+        ctx = build_context(session, scan)
+        errors: dict[str, str] = {}
 
-    scan_extractors = all_extractors_by_scope("scan")
-    if only is not None:
-        scan_extractors = [c for c in scan_extractors if c.name in only]
-    for cls in scan_extractors:
+        scan_extractors = all_extractors_by_scope("scan")
+        if only is not None:
+            scan_extractors = [c for c in scan_extractors if c.name in only]
+        for cls in scan_extractors:
+            try:
+                values = cls().extract(cleaned, ctx, cls.default_params)
+                if cls.name == "metadata":
+                    values["preprocessing_steps"] = preprocessing_steps
+                _upsert_feature(
+                    session,
+                    scan_id=scan.id,
+                    sample_id=None,
+                    name=cls.name,
+                    version=cls.version,
+                    scope="scan",
+                    params=cls.default_params,
+                    values=values,
+                )
+            except Exception as e:
+                errors[cls.name] = repr(e)
+                log.exception("scan_extractor_failed", extractor=cls.name, scan_id=str(scan.id))
+
+        sample_extractors = all_extractors_by_scope("sample")
+        if only is not None:
+            sample_extractors = [c for c in sample_extractors if c.name in only]
+        for cls in sample_extractors:
+            try:
+                values = cls().extract(None, ctx, cls.default_params)
+                _upsert_feature(
+                    session,
+                    scan_id=None,
+                    sample_id=scan.sample_id,
+                    name=cls.name,
+                    version=cls.version,
+                    scope="sample",
+                    params=cls.default_params,
+                    values=values,
+                )
+            except Exception as e:
+                errors[cls.name] = repr(e)
+                log.exception(
+                    "sample_extractor_failed", extractor=cls.name, sample_id=str(scan.sample_id)
+                )
+
+        session.commit()
+        return errors
+    finally:
         try:
-            values = cls().extract(cleaned, ctx, cls.default_params)
-            if cls.name == "metadata":
-                values["preprocessing_steps"] = preprocessing_steps
-            _upsert_feature(
-                session,
-                scan_id=scan.id,
-                sample_id=None,
-                name=cls.name,
-                version=cls.version,
-                scope="scan",
-                params=cls.default_params,
-                values=values,
-            )
-        except Exception as e:
-            errors[cls.name] = repr(e)
-            log.exception("scan_extractor_failed", extractor=cls.name, scan_id=str(scan.id))
-
-    sample_extractors = all_extractors_by_scope("sample")
-    if only is not None:
-        sample_extractors = [c for c in sample_extractors if c.name in only]
-    for cls in sample_extractors:
-        try:
-            values = cls().extract(None, ctx, cls.default_params)
-            _upsert_feature(
-                session,
-                scan_id=None,
-                sample_id=scan.sample_id,
-                name=cls.name,
-                version=cls.version,
-                scope="sample",
-                params=cls.default_params,
-                values=values,
-            )
-        except Exception as e:
-            errors[cls.name] = repr(e)
-            log.exception(
-                "sample_extractor_failed", extractor=cls.name, sample_id=str(scan.sample_id)
-            )
-
-    session.commit()
-    return errors
+            os.unlink(tmp_path)
+        except OSError:
+            pass
