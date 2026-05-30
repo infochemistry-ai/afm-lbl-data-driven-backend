@@ -67,6 +67,10 @@ def ingest_scan(
         status="pending",
         uploaded_at=datetime.now(timezone.utc),
     )
-    session.add(scan)
-    session.flush()
+    try:
+        session.add(scan)
+        session.flush()
+    except Exception:
+        storage.delete(storage_key)
+        raise
     return scan
