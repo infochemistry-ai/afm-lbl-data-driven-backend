@@ -20,7 +20,17 @@ def extract_features_task(self, scan_id: str, only: list[str] | None = None) -> 
         session.commit()
         try:
             errors = run_pipeline(session, scan, only=only)
-            scan.status = "ready"
+            from app.db.models import Feature
+            from sqlalchemy import select, func
+            has_features = session.scalar(
+                select(func.count(Feature.id)).where(
+                    (Feature.scan_id == scan.id) | (Feature.sample_id == scan.sample_id)
+                )
+            ) > 0
+            if errors and not has_features:
+                scan.status = "failed"
+            else:
+                scan.status = "ready"
             scan.error_message = errors or None
             scan.processed_at = datetime.now(timezone.utc)
             session.commit()
