@@ -20,6 +20,17 @@ def _flatten(rows: list[dict]) -> list[dict]:
     return [{k: r.get(k) for k in keys} for r in rows]
 
 
+def _coerce_for_csv(rows: list[dict]) -> list[dict]:
+    """Serialize list/dict values to JSON strings so PyArrow CSV writer accepts them."""
+    result = []
+    for row in rows:
+        result.append({
+            k: json.dumps(v) if isinstance(v, (list, dict)) else v
+            for k, v in row.items()
+        })
+    return result
+
+
 def build_dataset(session: Session, *, filter_: dict, format_: str, export_id: UUID) -> tuple[str, int]:
     experiment_id = filter_.get("experiment_id")
     sample_ids = filter_.get("sample_ids")
@@ -75,7 +86,8 @@ def build_dataset(session: Session, *, filter_: dict, format_: str, export_id: U
         rows.append(row)
 
     rows = _flatten(rows)
-    table = pa.Table.from_pylist(rows) if rows else pa.table({})
+    csv_rows = _coerce_for_csv(rows) if format_ == "csv" else rows
+    table = pa.Table.from_pylist(csv_rows) if csv_rows else pa.table({})
 
     storage = get_storage()
     ext = "parquet" if format_ == "parquet" else "csv"
