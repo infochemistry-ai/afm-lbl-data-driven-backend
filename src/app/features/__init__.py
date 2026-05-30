@@ -25,3 +25,10 @@ def all_extractors_by_scope(scope: str) -> list[Type[FeatureExtractor]]:
 
 
 __all__ = ["register_extractor", "list_extractors", "get_extractor", "all_extractors_by_scope"]
+
+# Force registration on import.
+from app.features import metadata as _metadata  # noqa: E402,F401
+from app.features import iso25178 as _iso25178  # noqa: E402,F401
+from app.features import distribution as _distribution  # noqa: E402,F401
+from app.features import polyelectrolyte as _polyelectrolyte  # noqa: E402,F401
+# preprocessing is invoked directly (not registered as a feature row), no import needed.
