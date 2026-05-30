@@ -32,6 +32,6 @@ def list_parsers() -> list[str]:
 
 # Force registration on import.
 from app.parsers import txt as _txt  # noqa: E402,F401
-# Task 12 adds: from app.parsers import native as _native  # noqa: E402,F401
+from app.parsers import native as _native  # noqa: E402,F401
 
 __all__ = ["register_parser", "get_parser_by_name", "get_parser_for_extension", "list_parsers", "Surface", "Parser"]
