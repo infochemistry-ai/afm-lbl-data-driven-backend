@@ -12,8 +12,10 @@ class LocalStorage:
 
     def _resolve(self, key: str) -> Path:
         target = (self.root / key).resolve()
-        if not str(target).startswith(str(self.root)):
-            raise ValueError(f"Key escapes storage root: {key}")
+        try:
+            target.relative_to(self.root)
+        except ValueError as e:
+            raise ValueError(f"Key escapes storage root: {key}") from e
         return target
 
     def put(self, key: str, data: BinaryIO) -> None:
