@@ -27,6 +27,7 @@ class PolyelectrolyteView(BaseModel):
     pka: float | None
     monomer_mw_g_mol: float
     backbone_type: str
+    monomer_smiles: str = ""
 
 
 class ScanMetaView(BaseModel):

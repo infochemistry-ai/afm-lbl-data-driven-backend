@@ -37,3 +37,4 @@ from app.features import pe_sequence_kmer as _pe_sequence_kmer  # noqa: E402,F40
 from app.features import acf_2d as _acf_2d  # noqa: E402,F401
 from app.features import psd_radial as _psd_radial  # noqa: E402,F401
 from app.features import acf_rowcol as _acf_rowcol  # noqa: E402,F401
+from app.features import rdkit_monomer as _rdkit_monomer  # noqa: E402,F401

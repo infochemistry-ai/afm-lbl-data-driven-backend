@@ -58,6 +58,7 @@ def build_context(session: Session, scan: Scan) -> ExtractionContext:
                 pka=pe.pka,
                 monomer_mw_g_mol=pe.monomer_mw_g_mol,
                 backbone_type=pe.backbone_type,
+                monomer_smiles=pe.monomer_smiles,
             )
             for pe in pe_rows
         },
