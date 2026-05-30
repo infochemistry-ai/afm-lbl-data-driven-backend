@@ -39,3 +39,4 @@ from app.features import psd_radial as _psd_radial  # noqa: E402,F401
 from app.features import acf_rowcol as _acf_rowcol  # noqa: E402,F401
 from app.features import rdkit_monomer as _rdkit_monomer  # noqa: E402,F401
 from app.features import tda_persistence as _tda_persistence  # noqa: E402,F401
+from app.features import lacunarity as _lacunarity  # noqa: E402,F401

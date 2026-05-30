@@ -20,3 +20,6 @@ exports/
 .mypy_cache/
 .ruff_cache/
 docker-compose.override.yml
+
+# vendored C++ build output
+src/app/features/_lacunarity/build/

@@ -21,6 +21,9 @@ COPY src ./src
 COPY migrations ./migrations
 COPY alembic.ini ./
 
+RUN cmake -S src/app/features/_lacunarity -B src/app/features/_lacunarity/build \
+    && cmake --build src/app/features/_lacunarity/build
+
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONPATH="/app/src"
 

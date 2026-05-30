@@ -13,3 +13,4 @@ celery_app.conf.task_default_retry_delay = 30
 celery_app.conf.task_serializer = "json"
 celery_app.conf.result_serializer = "json"
 celery_app.conf.accept_content = ["json"]
+celery_app.conf.worker_max_tasks_per_child = 100
