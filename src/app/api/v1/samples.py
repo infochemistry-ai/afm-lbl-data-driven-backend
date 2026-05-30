@@ -5,7 +5,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import db
-from app.db.models import Experiment, Layer, Polyelectrolyte, Sample
+from app.db.models import Experiment, Feature, Layer, Polyelectrolyte, Sample
+from app.schemas.feature import FeatureGroupOut
 from app.schemas.sample import SampleCreate, SampleOut
 
 router = APIRouter(tags=["samples"])
@@ -46,3 +47,29 @@ def get(sample_id: UUID, session: Session = Depends(db)) -> Sample:
     if sample is None:
         raise HTTPException(404, "sample not found")
     return sample
+
+
+@router.get("/samples/{sample_id}/features", response_model=list[FeatureGroupOut])
+def list_features(
+    sample_id: UUID,
+    extractor: str | None = None,
+    version: str | None = None,
+    session: Session = Depends(db),
+) -> list[Feature]:
+    if session.get(Sample, sample_id) is None:
+        raise HTTPException(404, "sample not found")
+    from sqlalchemy import select
+    stmt = select(Feature).where(Feature.sample_id == sample_id)
+    if extractor:
+        stmt = stmt.where(Feature.extractor_name == extractor)
+    if version:
+        stmt = stmt.where(Feature.extractor_version == version)
+    rows = list(session.scalars(stmt))
+    if version is None:
+        latest: dict[tuple, Feature] = {}
+        for r in rows:
+            key = (r.extractor_name, r.params_hash)
+            if key not in latest or r.computed_at > latest[key].computed_at:
+                latest[key] = r
+        rows = list(latest.values())
+    return rows
