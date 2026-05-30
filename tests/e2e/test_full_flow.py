@@ -61,3 +61,9 @@ def test_full_flow_two_samples(db_session, monkeypatch, tmp_path):
     assert "polyelectrolyte_meta__n_layers" in header
     assert "iso25178__Sa" in header
     assert "distribution__P95" in header
+    assert "minmax_patches__n_patches" in header
+    assert "psd_radial__hurst_H" in header
+    assert "acf_2d__correlation_length_nm" in header
+    assert "tda_persistence__n_features_h0" in header
+    assert "pe_sequence_kmer__unique_layer_types" in header
+    assert "rdkit_monomer__valid_layers" in header

@@ -44,4 +44,13 @@ def test_pipeline_end_to_end(db_session, monkeypatch, tmp_path):
         (Feature.scan_id == scan.id) | (Feature.sample_id == sample.id)
     ).all()
     names = {f.extractor_name for f in features}
-    assert {"metadata", "iso25178", "distribution", "polyelectrolyte_meta"} <= names
+    expected = {
+        "metadata", "iso25178", "distribution",
+        "minmax_patches", "psd_radial", "acf_2d", "acf_rowcol", "tda_persistence",
+        "polyelectrolyte_meta", "pe_sequence_kmer", "rdkit_monomer",
+    }
+    # lacunarity only if the .so is built (it is, locally, and in Docker).
+    import app.features.lacunarity as _lac
+    if _lac._LIB is not None:
+        expected.add("lacunarity")
+    assert expected <= names, f"missing: {expected - names}"
