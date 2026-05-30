@@ -34,3 +34,4 @@ from app.features import polyelectrolyte as _polyelectrolyte  # noqa: E402,F401
 from app.features import minmax_patches as _minmax_patches  # noqa: E402,F401
 # preprocessing is invoked directly (not registered as a feature row), no import needed.
 from app.features import pe_sequence_kmer as _pe_sequence_kmer  # noqa: E402,F401
+from app.features import acf_2d as _acf_2d  # noqa: E402,F401
