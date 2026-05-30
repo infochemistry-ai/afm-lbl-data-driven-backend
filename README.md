@@ -45,3 +45,44 @@ Set `STORAGE_BACKEND=s3` plus the `S3_*` env vars to use S3-compatible object st
 uv run pytest                       # full suite (requires Docker for testcontainers)
 uv run pytest tests/unit            # fast subset
 ```
+
+## Stage 2 extractors
+
+The default pipeline runs 12 extractors (4 MVP + 8 Stage 2):
+
+- **Scan-level:** `metadata`, `iso25178`, `distribution`, `minmax_patches`, `psd_radial`, `acf_2d`, `acf_rowcol`, `tda_persistence`, `lacunarity` (if C++ lib is built)
+- **Sample-level:** `polyelectrolyte_meta`, `pe_sequence_kmer`, `rdkit_monomer`
+
+Each extractor stores its results as a `features` row with `extractor_name`,
+`extractor_version`, and the value dict. To recompute a single extractor:
+
+```
+POST /api/v1/scans/{id}/recompute  {"extractors": ["psd_radial"]}
+```
+
+## Vendored components
+
+- **`src/app/features/_lacunarity/`** — C++ lacunarity implementation vendored from
+  [github.com/ShockOfWave/Fractal-Analisys](https://github.com/ShockOfWave/Fractal-Analisys)
+  (subdir `lib/`). License in `src/app/features/_lacunarity/LICENSE`. Requires GSL
+  (`libgsl-dev` in Debian/Ubuntu, `brew install gsl` on macOS).
+
+  Build locally:
+  ```
+  uv run python -m app.cli build lacunarity
+  ```
+
+  The Docker image builds it automatically (`libgsl-dev` is in the apt install
+  list). If the library is missing at runtime, the `lacunarity` extractor is
+  not registered and the rest of the pipeline runs unaffected.
+
+## Recomputing features on existing scans
+
+After adding new extractors or rebuilding the lacunarity library, recompute
+features on existing scans:
+
+```
+POST /api/v1/samples/{id}/recompute    # all scans of a sample
+POST /api/v1/scans/{id}/recompute      # one scan, all extractors
+POST /api/v1/scans/{id}/recompute  {"extractors": ["tda_persistence"]}
+```
