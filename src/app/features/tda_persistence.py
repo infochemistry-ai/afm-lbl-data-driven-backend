@@ -25,13 +25,13 @@ def _extract_patches(z: np.ndarray, p: int) -> np.ndarray:
 @register_extractor
 class TdaPersistenceExtractor:
     name = "tda_persistence"
-    version = "0.1.0"
+    version = "0.2.0"
     scope = "scan"
     default_params: dict = {
         "patch_size": 3,
         "max_dim": 2,
         "max_edge_length": None,
-        "subsample": 2000,
+        "subsample": 500,
         "seed": 42,
     }
 
@@ -60,11 +60,21 @@ class TdaPersistenceExtractor:
             idx = rng.choice(points.shape[0], size=subsample, replace=False)
             points = points[idx]
 
+        # Normalise per-feature so the filtration scale is decoupled from the absolute
+        # height units. Real AFM scans have tight, low-variance patches that collapse the
+        # Rips complex into hundreds of millions of simplices without this.
+        mean = points.mean(axis=0, keepdims=True)
+        std = points.std(axis=0, keepdims=True)
+        std = np.where(std < 1e-12, 1.0, std)
+        points = (points - mean) / std
+
         if edge_param is None:
             if points.shape[0] >= 2:
                 from scipy.spatial.distance import pdist
                 d = pdist(points)
-                edge = float(np.median(d)) * 0.5 if d.size else 1.0
+                # 10th percentile keeps the simplex count tractable while preserving
+                # local topology — the median is too generous on AFM-style point clouds.
+                edge = float(np.percentile(d, 10)) if d.size else 1.0
             else:
                 edge = 1.0
         else:

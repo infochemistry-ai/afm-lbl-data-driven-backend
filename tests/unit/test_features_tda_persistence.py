@@ -36,3 +36,14 @@ def test_tda_persistence_handles_tiny_matrix():
     s = Surface(heights=z, width_um=1.0, height_um=1.0, channel="Height", units="m")
     out = TdaPersistenceExtractor().extract(s, _ctx(4), {"max_dim": 1})
     assert out["n_features_h0"] >= 0
+
+
+def test_tda_persistence_on_real_fixture_completes():
+    """Regression: previously OOM-killed on real 256x256 AFM data."""
+    from app.parsers.txt import TxtParser
+    parser = TxtParser()
+    surface = parser.parse("tests/fixtures/sample_scan.txt")
+    out = TdaPersistenceExtractor().extract(surface, _ctx(surface.pixels_x), {})
+    assert out["n_points"] > 0
+    # Must produce a finite diagram, not crash.
+    assert isinstance(out["persistence_diagram"], list)
