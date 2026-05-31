@@ -1,3 +1,18 @@
+"""
+Protocol and shared data types for feature extractors.
+
+A :class:`FeatureExtractor` consumes a preprocessed :class:`~app.parsers.base.Surface`
+together with an :class:`ExtractionContext` (carrying the sample's LbL recipe
+and the catalog of polyelectrolytes) and returns a flat ``dict`` of named
+scalar / list values that the worker stores as one row in the ``features``
+table. Each extractor declares its ``name``, semantic ``version``, ``scope``
+(``"scan"`` or ``"sample"``) and ``default_params`` as class attributes.
+
+:func:`params_hash` produces a stable hash of any params dict; it is part of
+the uniqueness key of stored feature rows, which allows the same extractor
+to coexist in multiple parameter-tuned variants without collision.
+"""
+
 import hashlib
 import json
 from typing import ClassVar, Literal, Protocol, runtime_checkable

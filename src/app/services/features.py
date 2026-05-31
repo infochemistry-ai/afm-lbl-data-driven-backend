@@ -1,3 +1,20 @@
+"""
+Feature-extraction pipeline driver.
+
+:func:`run_pipeline` is invoked by the Celery worker for each scan; it:
+  1. retrieves the raw AFM file from the configured storage backend,
+  2. parses it through the registered parser,
+  3. applies the standardised preprocessing chain,
+  4. iterates every registered scan-scope extractor on the cleaned surface,
+  5. iterates every registered sample-scope extractor on the recipe context,
+  6. upserts each result into the ``features`` table keyed by
+     ``(scope id, extractor_name, extractor_version, params_hash)``.
+
+An individual extractor failure is caught and recorded in
+``scan.error_message`` without aborting the remaining work — partial feature
+coverage is preferred over losing every result of a long-running pipeline.
+"""
+
 import os
 import shutil
 import tempfile

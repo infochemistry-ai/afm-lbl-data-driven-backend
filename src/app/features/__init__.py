@@ -1,3 +1,18 @@
+"""
+Feature-extractor plugin registry.
+
+Each extractor module under ``app.features`` declares a class that conforms
+to :class:`app.features.base.FeatureExtractor` and decorates it with
+:func:`register_extractor`. Importing this package triggers registration of
+all built-in extractors via the ``from app.features import ...`` block at
+the bottom of this file.
+
+Worker code iterates over the registry through
+:func:`all_extractors_by_scope` (``"scan"`` or ``"sample"``); the HTTP API
+exposes :func:`list_extractors` and :func:`get_extractor` for name-based
+lookup.
+"""
+
 from typing import Type
 
 from app.features.base import FeatureExtractor

@@ -1,3 +1,11 @@
+"""
+FastAPI application factory.
+
+Configures structured JSON logging on startup, installs HTTP exception
+handlers, and mounts the v1 router at ``/api/v1``. The interactive OpenAPI
+documentation is available at ``/docs``.
+"""
+
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
