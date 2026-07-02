@@ -183,6 +183,10 @@ uv run pytest tests/unit            # fast subset, no Docker required
 
 The `src/app/features/_lacunarity/` directory contains a C++ gliding-box lacunarity implementation vendored from [Fractal-Analisys](https://github.com/ShockOfWave/Fractal-Analisys) (subdirectory `lib/`). The original license is preserved next to the source.
 
+## 3D visualization of a robotic cell
+
+A 3D assembly of the robotic cell was created in a CAD system and saved in *.STEP* format in the *3D models* directory. This assembly includes the Rozum Pulse 90 robot, a custom-designed linear gripper and bottles' rotator, as well as various stands and supports.
+
 ## Acknowledgements
 
 We thank the [Infochemistry Scientific Center](https://infochemistry.ru/) (ITMO University) for the provided data, AFM measurements and computing resources.
